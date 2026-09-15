@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f97316">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="המתכונים שלי">
+<title>אפליקציית המתכונים שלי</title>
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts - Rubik -->
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Tesseract.js OCR for text extraction from images -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+tailwind.config = {
+theme: {
+extend: {
+fontFamily: {
+sans: ['Rubik', 'sans-serif'],
+},
+colors: {
+brand: {
+50: '#fff7ed',
+100: '#ffedd5',
+500: '#f97316',
+600: '#ea580c',
+700: '#c2410c',
+}
+}
+}
+}
+}
+</script>
+<style>
+body {
+font-family: 'Rubik', sans-serif;
+background-color: #f8fafc;
+-webkit-tap-highlight-color: transparent;
+}
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+::-webkit-scrollbar-track {
+background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+background: #cbd5e1;
+border-radius: 4px;
+}
+.line-clamp-1 {
+display: -webkit-box;
+-webkit-line-clamp: 1;
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+.line-clamp-2 {
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+.scrollbar-none::-webkit-scrollbar {
+display: none;
+}
+.scrollbar-none {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-24 md:pb-8 md:pt-16">
+
+<!-- Desktop Header Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-slate-200 z-30 shadow-sm hidden md:block">
+<div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="switchTab('home')">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+<i data-lucide="utensils" class="w-5 h-5"></i>
+</div>
+<span class="font-bold text-xl text-slate-800 tracking-tight">המתכונים שלי</span>
+</div>
+
+<nav class="flex items-center space-x-1 space-x-reverse">
+<button onclick="switchTab('home')" id="dt-nav-home" class="nav-btn px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-orange-600 bg-orange-50">
+<i data-lucide="book-open" class="w-4 h-4"></i> דף הבית והמתכונים
+</button>
+<button onclick="switchTab('add')" id="dt-nav-add" class="nav-btn px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100">
+<i data-lucide="wand-2" class="w-4 h-4 text-orange-500"></i> הוספה והמרת מתכון
+</button>
+<button onclick="switchTab('shopping')" id="dt-nav-shopping" class="nav-btn px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100 relative">
+<i data-lucide="shopping-bag" class="w-4 h-4"></i> רשימת קניות
+<span id="shopping-badge-dt" class="hidden bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+</button>
+<button onclick="switchTab('converter')" id="dt-nav-converter" class="nav-btn px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100">
+<i data-lucide="calculator" class="w-4 h-4"></i> מחשבון המרות
+</button>
+</nav>
+</div>
+</header>
+
+<!-- Mobile Top App Header -->
+<div class="md:hidden sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-200 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center space-x-2.5 space-x-reverse" onclick="switchTab('home')">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-sm">
+<i data-lucide="utensils" class="w-5 h-5"></i>
+</div>
+<div>
+<h1 class="font-bold text-base text-slate-800 leading-tight">המתכונים שלי</h1>
+<p class="text-[10px] text-slate-400">ספר המתכונים האישי</p>
+</div>
+</div>
+<button onclick="switchTab('add')" class="bg-orange-500 active:scale-95 text-white px-3 py-1.5 rounded-xl shadow-md shadow-orange-500/30 flex items-center gap-1 text-xs font-semibold">
+<i data-lucide="plus" class="w-4 h-4"></i>
+<span>הוסף מתכון</span>
+</button>
+</div>
+
+<!-- MAIN CONTAINER -->
+<main class="max-w-6xl mx-auto w-full px-4 py-5 flex-grow">
+
+<!-- TAB 1: HOME PAGE & CATEGORIES -->
+<section id="tab-home" class="tab-content space-y-6">
+<!-- Search & Category Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="relative flex-grow max-w-lg">
+<i data-lucide="search" class="w-5 h-5 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+<input type="text" id="recipe-search-input" oninput="renderRecipes()" placeholder="חפש מתכון, מצרך או קטגוריה..." class="w-full pl-4 pr-11 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm shadow-sm">
+</div>
+<button onclick="openCategoryManagerModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 text-sm font-medium transition-all shadow-sm active:scale-95">
+<i data-lucide="folder-plus" class="w-4 h-4 text-orange-500"></i>
+<span>ניהול קבוצות / קטגוריות</span>
+</button>
+</div>
+
+<!-- Horizontal Category Scroll Bar -->
+<div class="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none" id="category-pills">
+<!-- Dynamic categories -->
+</div>
+
+<!-- Recipes Grid -->
+<div id="recipes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+<!-- Dynamic recipe cards -->
+</div>
+
+<!-- Empty State -->
+<div id="recipes-empty" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 p-8">
+<div class="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+<i data-lucide="book-open-check" class="w-8 h-8"></i>
+</div>
+<h3 class="text-lg font-bold text-slate-800 mb-1">אין עדיין מתכונים בקטגוריה זו</h3>
+<p class="text-slate-500 text-sm max-w-sm mx-auto mb-6">לחץ על כפתור הוספת מתכון כדי להעתיק טקסט או לסרוק תמונה מאינסטגרם, טיקטוק או וואטסאפ!</p>
+<button onclick="switchTab('add')" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium text-sm transition-all shadow-md shadow-orange-500/20 inline-flex items-center gap-2">
+<i data-lucide="plus-circle" class="w-4 h-4"></i> להוספת מתכון חדש
+</button>
+</div>
+</section>
+
+<!-- TAB 2: ADD / PASTE / OCR SCAN WORK AREA -->
+<section id="tab-add" class="tab-content hidden max-w-3xl mx-auto space-y-6">
+<!-- Header Banner -->
+<div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 text-white shadow-md shadow-orange-500/15 space-y-2">
+<div class="flex items-center gap-2 text-xl font-bold">
+<i data-lucide="sparkles" class="w-6 h-6"></i>
+<span>אזור הוספה ופענוח מתכון חדש</span>
+</div>
+<p class="text-xs sm:text-sm text-orange-50 leading-relaxed">
+בחר את הדרך הנוחה לך: הדבק טקסט חופשי או העלה תמונה/צילום מסך של מתכון. המערכת תסדר את המצרכים ואופן ההכנה ותאפשר לך לבדוק ולערוך הכל לפני שמירה בדף הבית!
+</p>
+</div>
+
+<!-- Mode Selector (Manual/Paste VS Image Scan) -->
+<div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 rounded-2xl text-center text-xs sm:text-sm font-bold">
+<button type="button" id="btn-mode-text" onclick="setAddMode('text')" class="py-2.5 rounded-xl transition-all bg-white text-orange-600 shadow-sm flex items-center justify-center gap-2">
+<i data-lucide="file-text" class="w-4 h-4"></i>
+<span>הדבקת טקסט / ידני</span>
+</button>
+<button type="button" id="btn-mode-image" onclick="setAddMode('image')" class="py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800 flex items-center justify-center gap-2">
+<i data-lucide="camera" class="w-4 h-4"></i>
+<span>סריקה מתמונה / צילום מסך</span>
+</button>
+</div>
+
+<div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+
+<!-- OPTION A: TEXT PASTE BOX -->
+<div id="mode-box-text" class="space-y-3">
+<div class="flex items-center justify-between">
+<label class="block text-sm font-bold text-slate-800 flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">1</span>
+הדבק כאן את המלל החופשי:
+</label>
+<button type="button" onclick="loadExampleText()" class="text-xs text-orange-600 hover:underline font-semibold">טען דוגמה</button>
+</div>
+<textarea id="raw-recipe-text" rows="6" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm leading-relaxed" placeholder="למשל:
+עוגת שוקולד עסיסית
+עוגה מדהימה שכולם אוהבים!
+
+מצרכים:
+2 כוסות קמח
+1 כוס סוכר
+3 ביצים
+1/2 כוס שמן
+
+אופן ההכנה:
+1. מערבבים את כל החומרים היבשים.
+2. מוסיפים את הביצים והשמן.
+3. אופים ב-180 מעלות 30 דקות."></textarea>
+
+<button type="button" onclick="parseRawRecipeText()" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.99] text-white font-medium rounded-xl text-sm transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2">
+<i data-lucide="wand-2" class="w-4.5 h-4.5"></i>
+פענח וסדר מתכון אוטומטית
+</button>
+</div>
+
+<!-- OPTION B: OCR IMAGE UPLOAD BOX -->
+<div id="mode-box-image" class="hidden space-y-4">
+<div class="bg-orange-50/70 border-2 border-dashed border-orange-200 rounded-2xl p-5 text-center space-y-3">
+<div class="w-12 h-12 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto">
+<i data-lucide="image-plus" class="w-6 h-6"></i>
+</div>
+<h3 class="text-sm font-bold text-slate-800">העלה תמונה או צילום מסך של המתכון</h3>
+<p class="text-xs text-slate-500 max-w-md mx-auto">
+המערכת תסרוק את הטקסט בעברית, תסדר את המצרכים ואופן ההכנה בטופס למטה ותשתמש בתמונה כתמונת הנושא של המתכון.
+</p>
+
+<label class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-xs sm:text-sm font-semibold rounded-xl cursor-pointer transition-all shadow-md shadow-orange-500/20">
+<i data-lucide="upload" class="w-4 h-4"></i>
+<span>בחר תמונה מהמכשיר</span>
+<input type="file" id="recipe-image-file" accept="image/*" class="hidden" onchange="handleImageOcrUpload(event)">
+</label>
+
+<!-- Progress Bar -->
+<div id="ocr-progress-container" class="hidden space-y-2 pt-2 max-w-md mx-auto">
+<div class="flex items-center justify-between text-xs text-orange-700 font-medium">
+<span id="ocr-status-text">טוען תמונה...</span>
+<span id="ocr-percent-text">0%</span>
+</div>
+<div class="w-full bg-orange-100 rounded-full h-2.5 overflow-hidden">
+<div id="ocr-progress-bar" class="bg-orange-500 h-2.5 rounded-full transition-all duration-300 w-0"></div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="border-slate-100 my-4">
+
+<!-- STEP 2: VERIFY AND EDIT FORM -->
+<form id="recipe-form" onsubmit="saveRecipe(event)" class="space-y-5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-sm font-bold text-slate-800">
+<span class="w-6 h-6 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">2</span>
+<span>בדיקת פרטים ושיוך לקבוצה:</span>
+</div>
+<span class="text-xs text-slate-400 font-normal">* שדות חובה</span>
+</div>
+
+<input type="hidden" id="recipe-edit-id" value="">
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">שם המתכון *</label>
+<input type="text" id="form-title" required placeholder="למשל: עוגת שוקולד" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm">
+</div>
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">בחר קבוצה / קטגוריה בדף הבית *</label>
+<select id="form-category" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm bg-white">
+<!-- Dynamic options -->
+</select>
+</div>
+</div>
+
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">תיאור קצר (יופיע בכרטיסיה בדף הבית)</label>
+<input type="text" id="form-description" placeholder="תיאור תמציתי של המנה..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm">
+</div>
+
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">קישור לתמונה למעלה (URL או תמונה שנסרקה)</label>
+<input type="text" id="form-image" placeholder="https://example.com/image.jpg (אופציונלי)" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm">
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Ingredients -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">מצרכים (כל מצרך בשורה חדשה) *</label>
+<textarea id="form-ingredients" rows="7" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm font-mono leading-relaxed" placeholder="2 כוסות קמח&#10;1 כוס סוכר&#10;3 ביצים"></textarea>
+</div>
+<!-- Steps -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold text-slate-700">אופן ההכנה (כל שלב בשורה חדשה) *</label>
+<textarea id="form-steps" rows="7" required class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm font-mono leading-relaxed" placeholder="מערבבים את כל החומרים בקערה&#10;יוצקים לתבנית&#10;אופים 30 דקות"></textarea>
+</div>
+</div>
+
+<div class="flex items-center gap-3 pt-2">
+<button type="submit" class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-medium rounded-xl text-sm transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2">
+<i data-lucide="check-circle-2" class="w-4.5 h-4.5"></i>
+<span>שמור והעבר לדף הבית</span>
+</button>
+<button type="button" onclick="clearRecipeForm()" class="px-5 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-medium transition-all">
+איפוס
+</button>
+</div>
+</form>
+</div>
+</section>
+
+<!-- TAB 3: SHOPPING LIST -->
+<section id="tab-shopping" class="tab-content hidden max-w-3xl mx-auto space-y-6">
+<div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+<i data-lucide="shopping-bag" class="w-6 h-6 text-orange-500"></i>
+רשימת קניות
+</h2>
+<p class="text-slate-500 text-xs sm:text-sm mt-0.5">כל המצרכים שחסרים לך במטבח מרוכזים במקום אחד</p>
+</div>
+<button onclick="clearCompletedShoppingItems()" class="text-xs text-slate-500 hover:text-red-500 font-medium flex items-center gap-1 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-all">
+<i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ניקוי מסומנים
+</button>
+</div>
+
+<!-- Add item manually -->
+<form onsubmit="addManualShoppingItem(event)" class="flex gap-2">
+<input type="text" id="manual-shop-input" placeholder="הוסף מצרך ידנית (למשל: נייר אפייה, שמן זית...)" required class="flex-grow px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm">
+<button type="submit" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-medium rounded-xl text-sm transition-all shadow-sm flex items-center gap-1.5 shrink-0">
+<i data-lucide="plus" class="w-4 h-4"></i> הוסף
+</button>
+</form>
+
+<!-- Shopping Items List -->
+<div id="shopping-list-items" class="space-y-2">
+<!-- Dynamic shopping items -->
+</div>
+
+<div id="shopping-empty" class="hidden text-center py-12 text-slate-400">
+<i data-lucide="shopping-cart" class="w-12 h-12 mx-auto mb-2 opacity-40"></i>
+<p class="text-sm font-medium">רשימת הקניות שלך ריקה!</p>
+<p class="text-xs text-slate-400 mt-1">תוכל להוסיף מצרכים ידנית או דרך כפתור "מה חסר לי" בתוך כל מתכון</p>
+</div>
+</div>
+</section>
+
+<!-- TAB 4: UNIT CONVERTER -->
+<section id="tab-converter" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+<div class="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+<div>
+<h2 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+<i data-lucide="calculator" class="w-6 h-6 text-orange-500"></i>
+מחשבון המרות יחידות ומשקלים
+</h2>
+<p class="text-slate-500 text-xs sm:text-sm mt-1">המרה מדויקת מנפח (כוסות/כפות) למשקל (גרמים/מ"ל) לפי סוג החומר הספציפי</p>
+</div>
+
+<div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200/60">
+<!-- Ingredient Selector -->
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-slate-700">בחר את סוג הרכיב (קובע את צפיפות המשקל):</label>
+<select id="conv-ingredient" onchange="calculateConversion()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm bg-white font-medium">
+<option value="flour">קמח לבן / קמח תפוח (1 כוס = 140 גרם)</option>
+<option value="sugar">סוכר לבן (1 כוס = 200 גרם)</option>
+<option value="powdered_sugar">אבקת סוכר (1 כוס = 120 גרם)</option>
+<option value="brown_sugar">סוכר חום דחוס (1 כוס = 240 גרם)</option>
+<option value="oil">שמן צמחי / שמן זית (1 כוס = 200 גרם)</option>
+<option value="butter">חמאה (1 כוס = 226 גרם)</option>
+<option value="honey">דבש / סילאן / מייפל (1 כוס = 320 גרם)</option>
+<option value="cocoa">אבקת קקאו (1 כוס = 100 גרם)</option>
+<option value="water">מים / חלב / מיץ (1 כוס = 240 גרם)</option>
+<option value="oats">שיבולת שועל (1 כוס = 90 גרם)</option>
+<option value="nuts">אגוזים טחונים / שקדים (1 כוס = 100 גרם)</option>
+</select>
+</div>
+
+<!-- Input Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-slate-700">כמות להמרה:</label>
+<input type="number" step="any" value="1" id="conv-amount" oninput="calculateConversion()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm bg-white font-medium">
+</div>
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-slate-700">מיחידה:</label>
+<select id="conv-from-unit" onchange="calculateConversion()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none text-sm bg-white font-medium">
+<option value="cup">כוסות (Cup)</option>
+<option value="tbsp">כפות (Tbsp)</option>
+<option value="tsp">כפיות (Tsp)</option>
+<option value="ml">מיליליטר (מ"ל)</option>
+<option value="g">גרמים (ג')</option>
+</select>
+</div>
+</div>
+</div>
+
+<!-- Result Box -->
+<div class="bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl p-5 text-white shadow-md shadow-orange-500/20 text-center space-y-2">
+<span class="text-xs text-orange-100 font-medium">תוצאת ההמרה המדויקת:</span>
+<div id="conv-results">--</div>
+</div>
+
+<!-- Quick Reference -->
+<div class="space-y-2 pt-2">
+<h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+<i data-lucide="info" class="w-4 h-4 text-orange-500"></i> טבלת מידות קבועות למטבח
+</h3>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600">
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כוס נפח = 240 מ"ל</div>
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כף = 15 מ"ל (3 כפיות)</div>
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כפית = 5 מ"ל</div>
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כוס קמח = 140 גרם</div>
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כוס סוכר = 200 גרם</div>
+<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">1 כוס חמאה = 226 גרם</div>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+
+<!-- Mobile Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 md:hidden flex items-center justify-around py-2 px-1 shadow-lg">
+<button onclick="switchTab('home')" id="mob-nav-home" class="flex flex-col items-center gap-1 text-orange-600 font-medium text-[11px] px-3 py-1">
+<i data-lucide="book-open" class="w-5 h-5"></i>
+<span>מתכונים</span>
+</button>
+<button onclick="switchTab('add')" id="mob-nav-add" class="flex flex-col items-center gap-1 text-slate-500 font-medium text-[11px] px-3 py-1">
+<i data-lucide="wand-2" class="w-5 h-5"></i>
+<span>הוספה</span>
+</button>
+<button onclick="switchTab('shopping')" id="mob-nav-shopping" class="flex flex-col items-center gap-1 text-slate-500 font-medium text-[11px] px-3 py-1 relative">
+<i data-lucide="shopping-bag" class="w-5 h-5"></i>
+<span>קניות</span>
+<span id="shopping-badge-mob" class="hidden absolute top-0 right-2 bg-orange-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+</button>
+<button onclick="switchTab('converter')" id="mob-nav-converter" class="flex flex-col items-center gap-1 text-slate-500 font-medium text-[11px] px-3 py-1">
+<i data-lucide="calculator" class="w-5 h-5"></i>
+<span>המרה</span>
+</button>
+</nav>
+
+<!-- MODAL 1: FULL RECIPE VIEW -->
+<div id="recipe-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+<div class="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 my-auto">
+<!-- Modal Header / Image Cover -->
+<div class="relative h-64 sm:h-80 w-full bg-slate-100">
+<img id="modal-image" src="" alt="" class="w-full h-full object-cover">
+<div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
+
+<!-- Close & Action Buttons -->
+<button onclick="closeRecipeModal()" class="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-md transition-all">
+<i data-lucide="x" class="w-5 h-5"></i>
+</button>
+<div class="absolute top-4 left-4 flex gap-2">
+<button id="modal-edit-btn" title="ערוך מתכון" class="bg-white/90 hover:bg-white text-slate-800 p-2.5 rounded-full backdrop-blur-md transition-all shadow-md">
+<i data-lucide="edit-3" class="w-4 h-4"></i>
+</button>
+<button id="modal-delete-btn" title="מחק מתכון" class="bg-white/90 hover:bg-red-50 text-red-600 p-2.5 rounded-full backdrop-blur-md transition-all shadow-md">
+<i data-lucide="trash-2" class="w-4 h-4"></i>
+</button>
+</div>
+
+<!-- Overlay Header Info -->
+<div class="absolute bottom-4 right-4 left-4 text-white">
+<span id="modal-category-badge" class="px-3 py-1 bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold rounded-full inline-block mb-2"></span>
+<h2 id="modal-title" class="text-2xl sm:text-3xl font-bold leading-tight"></h2>
+</div>
+</div>
+
+<!-- Modal Body -->
+<div class="p-5 sm:p-7 space-y-6">
+<!-- Description -->
+<p id="modal-description" class="text-slate-600 text-sm leading-relaxed italic border-r-4 border-orange-500 pr-3"></p>
+
+<!-- Ingredients Header & Missing Ingredients Trigger -->
+<div class="space-y-3">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+<i data-lucide="list-checks" class="w-5 h-5 text-orange-500"></i>
+מצרכים למתכון
+</h3>
+<button onclick="openShoppingChecklistModal()" class="text-xs bg-orange-50 hover:bg-orange-100 active:scale-95 text-orange-600 font-bold px-3.5 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 border border-orange-200/80 shadow-sm">
+<i data-lucide="shopping-cart" class="w-4 h-4"></i>
+<span>מה חסר לי במטבח? (הוסף לקניות)</span>
+</button>
+</div>
+<ul id="modal-ingredients" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">
+<!-- Dynamic list -->
+</ul>
+</div>
+
+<!-- Steps -->
+<div class="space-y-3">
+<h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+<i data-lucide="chef-hat" class="w-5 h-5 text-orange-500"></i>
+אופן ההכנה
+</h3>
+<ol id="modal-steps" class="space-y-3 text-sm text-slate-700">
+<!-- Dynamic list -->
+</ol>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MODAL 2: MISSING INGREDIENTS CHECKLIST -->
+<div id="shopping-checklist-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-5">
+<div class="flex items-center justify-between border-b border-slate-100 pb-3">
+<h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+<i data-lucide="check-square" class="w-5 h-5 text-orange-500"></i>
+סמן את המצרכים שחסרים לך:
+</h3>
+<button onclick="closeShoppingChecklistModal()" class="text-slate-400 hover:text-slate-600">
+<i data-lucide="x" class="w-5 h-5"></i>
+</button>
+</div>
+
+<div id="checklist-ingredients-container" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+<!-- Dynamic Checkboxes -->
+</div>
+
+<div class="flex gap-2 pt-2">
+<button onclick="addSelectedToShoppingList()" class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-orange-500/20 active:scale-95">
+הוסף מצרכים נבחרים לרשימת הקניות
+</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL 3: CATEGORY MANAGER -->
+<div id="category-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-5">
+<div class="flex items-center justify-between border-b border-slate-100 pb-3">
+<h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+<i data-lucide="folder-plus" class="w-5 h-5 text-orange-500"></i>
+ניהול קבוצות / קטגוריות
+</h3>
+<button onclick="closeCategoryManagerModal()" class="text-slate-400 hover:text-slate-600">
+<i data-lucide="x" class="w-5 h-5"></i>
+</button>
+</div>
+
+<form onsubmit="addCategory(event)" class="flex gap-2">
+<input type="text" id="new-cat-input" placeholder="שם קטגוריה חדשה (למשל: סלטים...)" required class="flex-grow px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none">
+<button type="submit" class="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm shrink-0 active:scale-95">הוסף</button>
+</form>
+
+<div id="categories-manager-list" class="space-y-2 max-h-56 overflow-y-auto">
+<!-- Dynamic category list -->
+</div>
+</div>
+</div>
+
+<script>
+// --- DEFAULT INITIAL DATA ---
+const DEFAULT_CATEGORIES = ["הכל", "מתכוני בישול", "מתכוני קינוחים", "מתכונים בריאים", "ללא גלוטן"];
+const DEFAULT_RECIPES = [
+{
+id: "rec_1",
+title: "עוגת שוקולד עסיסית",
+category: "מתכוני קינוחים",
+description: "עוגת שוקולד נימוחה, קלה להכנה ומנצחת לכל אירוע או שבת בבוקר",
+image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
+ingredients: ["2 כוסות קמח", "1 כוס סוכר", "1/2 כוס אבקת קקאו", "1 כפית אבקת אפייה", "3 ביצים", "1/2 כוס שמן", "1 כוס מים חמים"],
+steps: ["מחממים תנור ל-180 מעלות ומשרמנים תבנית אפייה.", "מערבבים בקערה את החומרים היבשים: קמח, סוכר, קקאו ואבקת אפייה.", "מוסיפים את הביצים, השמן והמים ומערבבים היטב עד לקבלת בלילה אחידה.", "יוצקים לתבנית ואופים כ-35 דקות."]
+},
+{
+id: "rec_2",
+title: "חזה עוף ברוטב טריאקי וירקות",
+category: "מתכוני בישול",
+description: "מנה אסייתית מהירה, מזינה וטעימה במיוחד לצהריים",
+image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
+ingredients: ["500 גרם חזה עוף חתוך לרצועות", "2 כפות שמן זית", "1 פלפל אדום חתוך", "1 ברוקולי מפורק לפרחים", "4 כפות רוטב טריאקי", "2 כפות רוטב סויה", "שומשום לעיטור"],
+steps: ["מחממים שמן זית במחבת רחבה או ווק.", "מטגנים את רצועות העוף עד להלבנה ומוציאים הצידה.", "מקפיצים את הירקות כ-5 דקות במחבת.", "מחזירים את העוף, מוסיפים טריאקי וסויה, ומבשלים 3 דקות נוספות."]
+},
+{
+id: "rec_3",
+title: "סלמון בתנור עם עשבי תיבול",
+category: "מתכונים בריאים",
+description: "נתחי סלמון עסיסיים בתיבול שום, לימון ושמן זית",
+image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80",
+ingredients: ["4 נתחי פילה סלמון", "3 כפות שמן זית", "2 שיני שום כתושות", "מיץ מלימון אחד", "מלח ופלפל שחור לפי הטעם", "פטרוזיליה קצוצה"],
+steps: ["מחממים תנור ל-200 מעלות ומניחים את הנתחים על נייר אפייה.", "מערבבים בקערית שמן זית, שום, מיץ לימון, מלח ופלפל.", "יוצקים את התערובת על הסלמון ומפזרים פטרוזיליה.", "אופים כ-15-18 דקות עד שהדג מוכן."]
+}
+];
+
+// --- LOCAL STORAGE STATE ---
+let categories = JSON.parse(localStorage.getItem('my_recipes_categories')) || DEFAULT_CATEGORIES;
+let recipes = JSON.parse(localStorage.getItem('my_recipes_data')) || DEFAULT_RECIPES;
+let shoppingList = JSON.parse(localStorage.getItem('my_recipes_shopping')) || [];
+
+let currentActiveCategory = "הכל";
+let activeViewingRecipe = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+renderCategoriesPills();
+renderCategorySelectOptions();
+renderRecipes();
+renderShoppingList();
+calculateConversion();
+lucide.createIcons();
+});
+
+function saveData() {
+localStorage.setItem('my_recipes_categories', JSON.stringify(categories));
+localStorage.setItem('my_recipes_data', JSON.stringify(recipes));
+localStorage.setItem('my_recipes_shopping', JSON.stringify(shoppingList));
+updateShoppingBadge();
+}
+
+// --- TAB NAVIGATION ---
+function switchTab(tabId) {
+document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+// Desktop Nav styling
+document.querySelectorAll('.nav-btn').forEach(btn => {
+btn.classList.remove('text-orange-600', 'bg-orange-50');
+btn.classList.add('text-slate-600');
+});
+const dtActive = document.getElementById(`dt-nav-${tabId}`);
+if (dtActive) {
+dtActive.classList.add('text-orange-600', 'bg-orange-50');
+dtActive.classList.remove('text-slate-600');
+}
+
+// Mobile Nav styling
+['home', 'add', 'shopping', 'converter'].forEach(t => {
+const mobBtn = document.getElementById(`mob-nav-${t}`);
+if (mobBtn) {
+if (t === tabId) {
+mobBtn.classList.add('text-orange-600');
+mobBtn.classList.remove('text-slate-500');
+} else {
+mobBtn.classList.remove('text-orange-600');
+mobBtn.classList.add('text-slate-500');
+}
+}
+});
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderCategoriesPills() {
+const container = document.getElementById('category-pills');
+container.innerHTML = categories.map(cat => {
+const isActive = cat === currentActiveCategory;
+return `
+<button onclick="filterCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all active:scale-95 ${
+isActive
+? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 font-bold'
+: 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+}">
+${cat}
+</button>
+`;
+}).join('');
+}
+
+function filterCategory(cat) {
+currentActiveCategory = cat;
+renderCategoriesPills();
+renderRecipes();
+}
+
+function renderCategorySelectOptions() {
+const select = document.getElementById('form-category');
+const validCats = categories.filter(c => c !== "הכל");
+select.innerHTML = validCats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function openCategoryManagerModal() {
+renderCategoryManagerList();
+document.getElementById('category-modal').classList.remove('hidden');
+}
+
+function closeCategoryManagerModal() {
+document.getElementById('category-modal').classList.add('hidden');
+}
+
+function renderCategoryManagerList() {
+const list = document.getElementById('categories-manager-list');
+const userCats = categories.filter(c => c !== "הכל");
+list.innerHTML = userCats.map(c => `
+<div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200/60 text-sm">
+<span class="font-medium text-slate-700">${c}</span>
+<button onclick="deleteCategory('${c}')" class="text-slate-400 hover:text-red-500 p-1 transition-colors">
+<i data-lucide="trash-2" class="w-4 h-4"></i>
+</button>
+</div>
+`).join('');
+lucide.createIcons();
+}
+
+function addCategory(e) {
+e.preventDefault();
+const input = document.getElementById('new-cat-input');
+const val = input.value.trim();
+if (val && !categories.includes(val)) {
+categories.push(val);
+saveData();
+renderCategoriesPills();
+renderCategorySelectOptions();
+renderCategoryManagerList();
+input.value = '';
+}
+}
+
+function deleteCategory(catName) {
+categories = categories.filter(c => c !== catName);
+if (currentActiveCategory === catName) currentActiveCategory = "הכל";
+saveData();
+renderCategoriesPills();
+renderCategorySelectOptions();
+renderCategoryManagerList();
+renderRecipes();
+}
+
+function renderRecipes() {
+const grid = document.getElementById('recipes-grid');
+const empty = document.getElementById('recipes-empty');
+const searchVal = document.getElementById('recipe-search-input').value.toLowerCase().trim();
+
+const filtered = recipes.filter(r => {
+const matchesCat = currentActiveCategory === "הכל" || r.category === currentActiveCategory;
+const matchesSearch = r.title.toLowerCase().includes(searchVal) ||
+r.description.toLowerCase().includes(searchVal) ||
+r.ingredients.some(i => i.toLowerCase().includes(searchVal));
+return matchesCat && matchesSearch;
+});
+
+if (filtered.length === 0) {
+grid.innerHTML = '';
+empty.classList.remove('hidden');
+return;
+}
+
+empty.classList.add('hidden');
+grid.innerHTML = filtered.map(r => `
+<div onclick="openRecipeModal('${r.id}')" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden group flex flex-col justify-between">
+<div>
+<div class="relative h-44 w-full bg-slate-100 overflow-hidden">
+<img src="${r.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80'}"
+alt="${r.title}"
+onerror="this.src='https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80'"
+class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+<span class="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-orange-600 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-orange-100">
+${r.category}
+</span>
+</div>
+<div class="p-4 space-y-1.5">
+<h3 class="font-bold text-base text-slate-800 group-hover:text-orange-600 transition-colors line-clamp-1">${r.title}</h3>
+<p class="text-slate-500 text-xs line-clamp-2 leading-relaxed">${r.description || 'לחץ לצפייה במתכון המלא'}</p>
+</div>
+</div>
+<div class="px-4 pb-4 pt-1 flex items-center justify-between text-xs text-orange-600 font-semibold border-t border-slate-50">
+<span class="flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> צפה במתכון</span>
+<i data-lucide="chevron-left" class="w-4 h-4 text-slate-400 group-hover:translate-x-[-2px] transition-transform"></i>
+</div>
+</div>
+`).join('');
+
+lucide.createIcons();
+}
+
+function setAddMode(mode) {
+const btnText = document.getElementById('btn-mode-text');
+const btnImg = document.getElementById('btn-mode-image');
+const boxText = document.getElementById('mode-box-text');
+const boxImg = document.getElementById('mode-box-image');
+
+if (mode === 'text') {
+btnText.className = 'py-2.5 rounded-xl transition-all bg-white text-orange-600 shadow-sm flex items-center justify-center gap-2';
+btnImg.className = 'py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800 flex items-center justify-center gap-2';
+boxText.classList.remove('hidden');
+boxImg.classList.add('hidden');
+} else {
+btnImg.className = 'py-2.5 rounded-xl transition-all bg-white text-orange-600 shadow-sm flex items-center justify-center gap-2';
+btnText.className = 'py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800 flex items-center justify-center gap-2';
+boxImg.classList.remove('hidden');
+boxText.classList.add('hidden');
+}
+}
+
+async function handleImageOcrUpload(event) {
+const file = event.target.files[0];
+if (!file) return;
+
+const progressContainer = document.getElementById('ocr-progress-container');
+const statusText = document.getElementById('ocr-status-text');
+const percentText = document.getElementById('ocr-percent-text');
+const progressBar = document.getElementById('ocr-progress-bar');
+
+progressContainer.classList.remove('hidden');
+progressBar.style.width = '5%';
+statusText.textContent = 'טוען תמונה ומכין מנוע זיהוי...';
+
+try {
+// Set uploaded image as base64 preview
+const reader = new FileReader();
+reader.onload = function(e) {
+const dataUrl = e.target.result;
+document.getElementById('form-image').value = dataUrl;
+};
+reader.readAsDataURL(file);
+
+// Run Tesseract OCR for Hebrew
+statusText.textContent = 'מזהה ומחלץ טקסט בעברית ובאנגלית...';
+
+const result = await Tesseract.recognize(
+file,
+'heb+eng',
+{
+logger: m => {
+if (m.status === 'recognizing text') {
+const pct = Math.round((m.progress || 0) * 100);
+progressBar.style.width = `${pct}%`;
+percentText.textContent = `${pct}%`;
+statusText.textContent = `מפענח טקסט מהתמונה (${pct}%)...`;
+}
+}
+}
+);
+
+const extractedText = result.data.text.trim();
+
+if (extractedText) {
+document.getElementById('raw-recipe-text').value = extractedText;
+parseRawRecipeText();
+statusText.textContent = 'הפענוח הושלם בהצלחה! הפרטים מוכנים לבדיקה בטופס למטה.';
+percentText.textContent = '100%';
+progressBar.style.width = '100%';
+} else {
+statusText.textContent = 'לא נשלף טקסט ברור. נסה תמונה מוארת וברורה יותר.';
+}
+} catch (err) {
+console.error("OCR Error:", err);
+statusText.textContent = 'אירעה שגיאה בזיהוי התמונה. ניתן להדביק טקסט ידנית.';
+} finally {
+event.target.value = '';
+}
+}
+
+function parseRawRecipeText() {
+const raw = document.getElementById('raw-recipe-text').value.trim();
+if (!raw) return;
+
+const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+let title = lines[0] || '';
+let description = '';
+let ingredients = [];
+let steps = [];
+
+let mode = 'none';
+
+for (let i = 1; i < lines.length; i++) {
+const line = lines[i];
+const lower = line.toLowerCase();
+
+// Detect headers
+if (lower.includes('מצרכים') || lower.includes('רכיבים') || lower.includes('חומרים')) {
+mode = 'ingredients';
+continue;
+} else if (lower.includes('אופן ההכנה') || lower.includes('הכנה') || lower.includes('שלבי הכנה') || lower.includes('הוראות')) {
+mode = 'steps';
+continue;
+}
+
+if (mode === 'none') {
+description += (description ? ' ' : '') + line;
+} else if (mode === 'ingredients') {
+const cleaned = line.replace(/^[\s•\-\*\d+\.]+\s*/, '');
+if (cleaned) ingredients.push(cleaned);
+} else if (mode === 'steps') {
+const cleaned = line.replace(/^[\s•\-\*\d+\.]+\s*/, '');
+if (cleaned) steps.push(cleaned);
+}
+}
+
+if (ingredients.length === 0 && steps.length === 0) {
+description = lines.slice(1, 2).join(' ');
+ingredients = lines.slice(2, 6);
+steps = lines.slice(6);
+}
+
+document.getElementById('form-title').value = title;
+document.getElementById('form-description').value = description;
+document.getElementById('form-ingredients').value = ingredients.join('\n');
+document.getElementById('form-steps').value = steps.join('\n');
+}
+
+function loadExampleText() {
+document.getElementById('raw-recipe-text').value = `פנקייק אוורירי לבוקר
+פנקייקים זהובים ורכים שילדים ומבוגרים אוהבים!
+
+מצרכים:
+1 כוס קמח
+2 כפות סוכר
+1 כפית אבקת אפייה
+1 ביצה
+3/4 כוס חלב
+2 כפות חמאה מומסת
+
+אופן ההכנה:
+1. בקערה טורפים ביצה, חלב וחמאה מומסת.
+2. מוסיפים קמח, סוכר ואבקת אפייה ומערבבים רק עד איחוד.
+3. מחממים מחבת משומנת קלות ויוצקים תלוליות בלילה.
+4. מטגנים עד הופעת בועות, הופכים ומטגנים עוד דקה.`;
+parseRawRecipeText();
+}
+
+function saveRecipe(e) {
+e.preventDefault();
+const editId = document.getElementById('recipe-edit-id').value;
+const title = document.getElementById('form-title').value.trim();
+const category = document.getElementById('form-category').value;
+const description = document.getElementById('form-description').value.trim();
+const image = document.getElementById('form-image').value.trim();
+const ingredients = document.getElementById('form-ingredients').value.split('\n').map(s => s.trim()).filter(s => s);
+const steps = document.getElementById('form-steps').value.split('\n').map(s => s.trim()).filter(s => s);
+
+if (editId) {
+const index = recipes.findIndex(r => r.id === editId);
+if (index !== -1) {
+recipes[index] = { ...recipes[index], title, category, description, image, ingredients, steps };
+}
+} else {
+const newRecipe = {
+id: 'rec_' + Date.now(),
+title,
+category,
+description,
+image,
+ingredients,
+steps
+};
+recipes.unshift(newRecipe);
+}
+
+saveData();
+clearRecipeForm();
+switchTab('home');
+renderRecipes();
+}
+
+function clearRecipeForm() {
+document.getElementById('recipe-edit-id').value = '';
+document.getElementById('raw-recipe-text').value = '';
+document.getElementById('recipe-form').reset();
+document.getElementById('ocr-progress-container').classList.add('hidden');
+}
+
+function editRecipe(id) {
+const r = recipes.find(x => x.id === id);
+if (!r) return;
+
+closeRecipeModal();
+switchTab('add');
+
+document.getElementById('recipe-edit-id').value = r.id;
+document.getElementById('form-title').value = r.title;
+document.getElementById('form-category').value = r.category;
+document.getElementById('form-description').value = r.description || '';
+document.getElementById('form-image').value = r.image || '';
+document.getElementById('form-ingredients').value = r.ingredients.join('\n');
+document.getElementById('form-steps').value = r.steps.join('\n');
+}
+
+function deleteRecipe(id) {
+recipes = recipes.filter(r => r.id !== id);
+saveData();
+closeRecipeModal();
+renderRecipes();
+}
+
+function openRecipeModal(id) {
+const r = recipes.find(x => x.id === id);
+if (!r) return;
+activeViewingRecipe = r;
+
+document.getElementById('modal-image').src = r.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
+document.getElementById('modal-title').textContent = r.title;
+document.getElementById('modal-category-badge').textContent = r.category;
+document.getElementById('modal-description').textContent = r.description || 'אין תיאור מפורט למתכון זה';
+
+document.getElementById('modal-ingredients').innerHTML = r.ingredients.map(ing => `
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-orange-500 rounded-full shrink-0"></span>
+<span>${ing}</span>
+</li>
+`).join('');
+
+document.getElementById('modal-steps').innerHTML = r.steps.map((st, i) => `
+<li class="flex gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+<span class="font-bold text-orange-500 shrink-0 w-6">${i+1}.</span>
+<span class="leading-relaxed">${st}</span>
+</li>
+`).join('');
+
+document.getElementById('modal-edit-btn').onclick = () => editRecipe(r.id);
+document.getElementById('modal-delete-btn').onclick = () => deleteRecipe(r.id);
+
+document.getElementById('recipe-modal').classList.remove('hidden');
+lucide.createIcons();
+}
+
+function closeRecipeModal() {
+document.getElementById('recipe-modal').classList.add('hidden');
+}
+
+function openShoppingChecklistModal() {
+if (!activeViewingRecipe) return;
+const container = document.getElementById('checklist-ingredients-container');
+container.innerHTML = activeViewingRecipe.ingredients.map((ing) => `
+<label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 cursor-pointer border border-slate-200/60 transition-colors">
+<input type="checkbox" value="${ing}" class="w-4.5 h-4.5 text-orange-500 rounded focus:ring-orange-500 border-slate-300">
+<span class="text-sm font-medium text-slate-700">${ing}</span>
+</label>
+`).join('');
+
+document.getElementById('shopping-checklist-modal').classList.remove('hidden');
+}
+
+function closeShoppingChecklistModal() {
+document.getElementById('shopping-checklist-modal').classList.add('hidden');
+}
+
+function addSelectedToShoppingList() {
+const checkboxes = document.querySelectorAll('#checklist-ingredients-container input[type="checkbox"]:checked');
+checkboxes.forEach(cb => {
+const val = cb.value;
+if (!shoppingList.some(item => item.text === val)) {
+shoppingList.push({ id: 'shop_' + Date.now() + Math.random(), text: val, completed: false });
+}
+});
+
+saveData();
+renderShoppingList();
+closeShoppingChecklistModal();
+closeRecipeModal();
+switchTab('shopping');
+}
+
+function renderShoppingList() {
+const container = document.getElementById('shopping-list-items');
+const empty = document.getElementById('shopping-empty');
+
+if (shoppingList.length === 0) {
+container.innerHTML = '';
+empty.classList.remove('hidden');
+updateShoppingBadge();
+return;
+}
+
+empty.classList.add('hidden');
+container.innerHTML = shoppingList.map(item => `
+<div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 ${item.completed ? 'opacity-60 bg-slate-100' : ''}">
+<label class="flex items-center gap-3 cursor-pointer flex-grow">
+<input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleShoppingItem('${item.id}')" class="w-4.5 h-4.5 text-orange-500 rounded focus:ring-orange-500 border-slate-300">
+<span class="text-sm text-slate-700 ${item.completed ? 'line-through text-slate-400' : 'font-medium'}">${item.text}</span>
+</label>
+<button onclick="deleteShoppingItem('${item.id}')" class="text-slate-400 hover:text-red-500 p-1 transition-colors">
+<i data-lucide="trash-2" class="w-4 h-4"></i>
+</button>
+</div>
+`).join('');
+
+updateShoppingBadge();
+lucide.createIcons();
+}
+
+function addManualShoppingItem(e) {
+e.preventDefault();
+const input = document.getElementById('manual-shop-input');
+const val = input.value.trim();
+if (val) {
+shoppingList.push({ id: 'shop_' + Date.now(), text: val, completed: false });
+saveData();
+renderShoppingList();
+input.value = '';
+}
+}
+
+function toggleShoppingItem(id) {
+const item = shoppingList.find(x => x.id === id);
+if (item) {
+item.completed = !item.completed;
+saveData();
+renderShoppingList();
+}
+}
+
+function deleteShoppingItem(id) {
+shoppingList = shoppingList.filter(x => x.id !== id);
+saveData();
+renderShoppingList();
+}
+
+function clearCompletedShoppingItems() {
+shoppingList = shoppingList.filter(x => !x.completed);
+saveData();
+renderShoppingList();
+}
+
+function updateShoppingBadge() {
+const count = shoppingList.filter(x => !x.completed).length;
+const badgeDt = document.getElementById('shopping-badge-dt');
+const badgeMob = document.getElementById('shopping-badge-mob');
+
+if (count > 0) {
+badgeDt.textContent = count;
+badgeMob.textContent = count;
+badgeDt.classList.remove('hidden');
+badgeMob.classList.remove('hidden');
+} else {
+badgeDt.classList.add('hidden');
+badgeMob.classList.add('hidden');
+}
+}
+
+const INGREDIENT_DENSITIES = {
+flour: 140,
+sugar: 200,
+powdered_sugar: 120,
+brown_sugar: 240,
+oil: 200,
+butter: 226,
+honey: 320,
+cocoa: 100,
+water: 240,
+oats: 90,
+nuts: 100
+};
+
+function calculateConversion() {
+const amount = parseFloat(document.getElementById('conv-amount').value) || 0;
+const fromUnit = document.getElementById('conv-from-unit').value;
+const ingredient = document.getElementById('conv-ingredient').value;
+const densityGramsPerCup = INGREDIENT_DENSITIES[ingredient] || 240;
+
+let volumeMl = 0;
+if (fromUnit === 'cup') volumeMl = amount * 240;
+else if (fromUnit === 'tbsp') volumeMl = amount * 15;
+else if (fromUnit === 'tsp') volumeMl = amount * 5;
+else if (fromUnit === 'ml') volumeMl = amount;
+else if (fromUnit === 'g') {
+volumeMl = (amount / densityGramsPerCup) * 240;
+}
+
+const cups = (volumeMl / 240).toFixed(2);
+const grams = ((volumeMl / 240) * densityGramsPerCup).toFixed(1);
+const tbsps = (volumeMl / 15).toFixed(1);
+
+document.getElementById('conv-results').innerHTML = `
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+<div class="bg-white/15 backdrop-blur-md p-3 rounded-xl">
+<div class="text-xl font-bold">${grams} ג'</div>
+<div class="text-[11px] text-orange-100">משקל בגרמים</div>
+</div>
+<div class="bg-white/15 backdrop-blur-md p-3 rounded-xl">
+<div class="text-xl font-bold">${cups}</div>
+<div class="text-[11px] text-orange-100">כוסות</div>
+</div>
+<div class="bg-white/15 backdrop-blur-md p-3 rounded-xl">
+<div class="text-xl font-bold">${tbsps}</div>
+<div class="text-[11px] text-orange-100">כפות</div>
+</div>
+<div class="bg-white/15 backdrop-blur-md p-3 rounded-xl">
+<div class="text-xl font-bold">${Math.round(volumeMl)} מ"ל</div>
+<div class="text-[11px] text-orange-100">מיליליטר</div>
+</div>
+</div>
+`;
+}
+</script>
+</body>
+</html>
+```eod
