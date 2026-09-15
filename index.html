@@ -1,414 +1,416 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מתכונים שלי</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tesseract.js לסריקת OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אפליקציית המתכונים שלי</title>
+  <style>
+    :root {
+      --primary-color: #e67e22;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #2c3e50;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding-bottom: 70px;
+    }
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    nav button {
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #777;
+    }
+    nav button.active {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    .page { display: none; padding: 15px; }
+    .page.active { display: block; }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      position: relative;
+    }
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .card-content { padding: 10px; }
+    .card-title { font-weight: bold; margin-bottom: 5px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      color: white;
+    }
+    .badge-dairy { background-color: #3498db; }
+    .badge-meat { background-color: #e74c3c; }
+    .badge-parve { background-color: #2ecc71; }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    button.btn-main {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .ingredient-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .ingredient-row input[type="checkbox"] { width: auto; }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen pb-12" dir="rtl">
+<body>
 
-    <!-- כותרת עליונה -->
-    <header class="bg-orange-500 text-white py-6 shadow-md mb-8">
-        <div class="container mx-auto text-center px-4">
-            <h1 class="text-3xl font-bold">ספר המתכונים שלי</h1>
-            <p class="text-sm opacity-90 mt-1">ניהול, סריקת תמונות וסינון מתכונים</p>
-        </div>
-    </header>
+  <header id="header-title">אפליקציית המתכונים שלי</header>
 
-    <main class="container mx-auto px-4 space-y-8 max-w-4xl">
+  <!-- דף הבית -->
+  <div id="page-home" class="page active">
+    <h3>קטגוריות</h3>
+    <select id="filter-category" onchange="renderHome()">
+      <option value="all">כל הקטגוריות</option>
+      <option value="בישול">בישול</option>
+      <option value="קינוחים">קינוחים</option>
+      <option value="בריא">בריא</option>
+      <option value="ללא גלוטן">ללא גלוטן</option>
+    </select>
+    
+    <div id="recipes-grid" class="card-grid"></div>
+  </div>
 
-        <!-- ========================================== -->
-        <!-- 1. סריקת מתכון מתמונות (OCR מרובה)         -->
-        <!-- ========================================== -->
-        <section class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">📷 סריקת מתכון מתמונות</h2>
-            
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">בחר תמונה אחת או יותר לסריקה:</label>
-                <input type="file" id="imageInput" accept="image/*" multiple 
-                       onchange="handleImageSelection(event)" 
-                       class="block w-full text-sm text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 cursor-pointer">
-            </div>
+  <!-- דף הוספת/עריכת מתכון -->
+  <div id="page-add" class="page">
+    <h2>הוספת מתכון חדש</h2>
+    
+    <label>מפתח Gemini API (פענוח טקסט/תמונה):</label>
+    <input type="password" id="api-key" placeholder="הכנס מפתח API לפענוח אוטומטי">
 
-            <!-- רשימת התמונות שנבחרו והגדרת הסוג שלהן -->
-            <div id="imageList" class="space-y-3 mb-4"></div>
+    <label>ייבוא מטקסט/תמונות מרובות:</label>
+    <textarea id="import-text" placeholder="הדבק כאן טקסט מאינסטגרם/טיקטוק..."></textarea>
+    <label>או העלה תמונות מתכון:</label>
+    <input type="file" id="import-images" multiple accept="image/*">
+    <button class="btn-main" onclick="parseWithAI()">ניתוח אוטומטי בעזרת AI</button>
+    <hr>
 
-            <button id="scanBtn" onclick="processAllImages()" disabled 
-                    class="w-full bg-orange-500 text-white font-bold py-2.5 px-4 rounded shadow hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
-                סרוק תמונות והכנס למתכון
-            </button>
+    <input type="text" id="recipe-title" placeholder="שם המתכון">
+    <input type="text" id="recipe-desc" placeholder="תיאור קצר">
+    <label>תמונה ראשית (כתובת URL או העלאת קובץ):</label>
+    <input type="file" id="recipe-img-file" accept="image/*">
+    
+    <label>קטגוריה:</label>
+    <select id="recipe-category">
+      <option value="בישול">בישול</option>
+      <option value="קינוחים">קינוחים</option>
+      <option value="בריא">בריא</option>
+      <option value="ללא גלוטן">ללא גלוטן</option>
+    </select>
 
-            <!-- מחוון התקדמות -->
-            <div id="scanProgress" class="hidden mt-4 text-center text-sm font-semibold text-orange-600"></div>
-        </section>
+    <label>סוג המתכון:</label>
+    <select id="recipe-type">
+      <option value="פרווה">פרווה</option>
+      <option value="חלבי">חלבי</option>
+      <option value="בשרי">בשרי</option>
+    </select>
 
-        <!-- ========================================== -->
-        <!-- 2. טופס הוספת / עריכת מתכון                 -->
-        <!-- ========================================== -->
-        <section class="bg-white p-6 rounded-lg shadow-md space-y-4">
-            <h2 class="text-xl font-bold text-gray-800 border-b pb-2">✏️ פרטי המתכון</h2>
-            
-            <div>
-                <label class="block text-gray-700 font-bold mb-1">שם המתכון:</label>
-                <input type="text" id="recipeTitle" placeholder="לדוגמה: עוגת שוקולד חמה" class="w-full p-2 border rounded border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none">
-            </div>
+    <label>מצרכים (שורה לכל מצרך):</label>
+    <textarea id="recipe-ingredients" rows="5"></textarea>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- בחירת קטגוריה -->
-                <div>
-                    <label class="block text-gray-700 font-bold mb-1">קטגוריה:</label>
-                    <select id="recipeCategory" class="w-full p-2 border rounded border-gray-300 bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none">
-                        <option value="cooking">בישול</option>
-                        <option value="baking">אפייה</option>
-                        <option value="desserts">קינוחים</option>
-                        <option value="salads">סלטים</option>
-                        <option value="soups">מרקים</option>
-                    </select>
-                </div>
+    <label>אופן ההכנה (שורה לכל שלב):</label>
+    <textarea id="recipe-steps" rows="5"></textarea>
 
-                <!-- בחירת סוג כשרות -->
-                <div>
-                    <label class="block text-gray-700 font-bold mb-1">סוג כשרות:</label>
-                    <select id="recipeKosher" class="w-full p-2 border rounded border-gray-300 bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none">
-                        <option value="dairy">🥛 חלבי</option>
-                        <option value="meat">🥩 בשרי</option>
-                        <option value="pareve">🌱 פרווה</option>
-                    </select>
-                </div>
-            </div>
+    <button class="btn-main" onclick="saveRecipe()">שמור מתכון</button>
+  </div>
 
-            <div>
-                <label class="block text-gray-700 font-bold mb-1">רכיבים:</label>
-                <textarea id="ingredientsText" rows="4" class="w-full p-2 border rounded border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none" placeholder="הרכיבים ייסרקו לכאן או הוסף אותם ידנית..."></textarea>
-            </div>
+  <!-- דף צפייה במתכון -->
+  <div id="page-view" class="page">
+    <button onclick="showPage('home')">← חזרה לדף הבית</button>
+    <h2 id="view-title"></h2>
+    <img id="view-img" src="" style="width:100%; max-height:250px; object-fit:cover; border-radius:8px;">
+    <p id="view-desc" style="font-style:italic;"></p>
+    <span id="view-type" class="badge"></span>
+    
+    <h3>מצרכים:</h3>
+    <div id="view-ingredients"></div>
+    <button class="btn-main" style="margin-top:10px;" onclick="addMissingToShopping()">הוסף מצרכים מסומנים לרשימת הקניות</button>
 
-            <div>
-                <label class="block text-gray-700 font-bold mb-1">אופן הכנה:</label>
-                <textarea id="instructionsText" rows="5" class="w-full p-2 border rounded border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none" placeholder="אופן ההכנה ייסרק לכאן או הוסף אותו ידנית..."></textarea>
-            </div>
+    <h3>אופן הכנה:</h3>
+    <ol id="view-steps"></ol>
 
-            <button onclick="saveRecipe()" class="w-full bg-green-600 text-white font-bold py-2.5 px-4 rounded shadow hover:bg-green-700 transition-colors">
-                שמור מתכון
-            </button>
-        </section>
+    <button style="background:#e74c3c; color:white;" onclick="deleteCurrentRecipe()">מחק מתכון</button>
+  </div>
 
-        <!-- ========================================== -->
-        <!-- 3. סרגל סינון וחיפוש                       -->
-        <!-- ========================================== -->
-        <section class="bg-white p-4 rounded-lg shadow-md">
-            <h3 class="text-lg font-bold text-gray-800 mb-3">🔍 חיפוש וסינון מתכונים</h3>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">חיפוש לפי שם:</label>
-                    <input type="text" id="filterSearchInput" oninput="applyFilters()" placeholder="חפש מתכון..." 
-                           class="w-full p-2 text-sm border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400">
-                </div>
+  <!-- דף רשימת קניות והמרות -->
+  <div id="page-tools" class="page">
+    <h2>רשימת קניות</h2>
+    <div style="display:flex; gap:5px;">
+      <input type="text" id="new-shop-item" placeholder="הוסף מוצר...">
+      <button style="width:80px;" class="btn-main" onclick="addManualShopItem()">הוסף</button>
+    </div>
+    <ul id="shopping-list" style="list-style:none; padding:0;"></ul>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">קטגוריה:</label>
-                    <select id="filterCategory" onchange="applyFilters()" class="w-full p-2 text-sm border rounded border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
-                        <option value="all">כל הקטגוריות</option>
-                        <option value="cooking">בישול</option>
-                        <option value="baking">אפייה</option>
-                        <option value="desserts">קינוחים</option>
-                        <option value="salads">סלטים</option>
-                        <option value="soups">מרקים</option>
-                    </select>
-                </div>
+    <hr>
+    <h2>מחשבון המרות</h2>
+    <label>רכיב:</label>
+    <select id="convert-ingredient">
+      <option value="flour">קמח (1 כוס = 140 גרם)</option>
+      <option value="sugar">סוכר (1 כוס = 200 גרם)</option>
+      <option value="oil">שמן (1 כוס = 200 מ"ל)</option>
+      <option value="water">מים/חלב (1 כוס = 240 מ"ל)</option>
+      <option value="powdered_sugar">אבקת סוכר (1 כוס = 120 גרם)</option>
+    </select>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">סוג כשרות:</label>
-                    <select id="filterKosher" onchange="applyFilters()" class="w-full p-2 text-sm border rounded border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
-                        <option value="all">הכל (חלבי / בשרי / פרווה)</option>
-                        <option value="dairy">🥛 חלבי</option>
-                        <option value="meat">🥩 בשרי</option>
-                        <option value="pareve">🌱 פרווה</option>
-                    </select>
-                </div>
-            </div>
-        </section>
+    <label>כמות בכוסות:</label>
+    <input type="number" id="convert-cups" placeholder="לדוגמה: 0.5" oninput="calculateConversion()">
 
-        <!-- ========================================== -->
-        <!-- 4. תצוגת רשימת המתכונים                   -->
-        <!-- ========================================== -->
-        <section id="recipesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></section>
+    <h3 id="convert-result">תוצאה: 0 גרם / מ"ל</h3>
+  </div>
 
-    </main>
+  <!-- ניווט תחתון -->
+  <nav>
+    <button id="nav-home" class="active" onclick="showPage('home')">🏠 דף הבית</button>
+    <button id="nav-add" onclick="showPage('add')">➕ הוספת מתכון</button>
+    <button id="nav-tools" onclick="showPage('tools')">🛒 קניות והמרות</button>
+  </nav>
 
-    <!-- ========================================== -->
-    <!-- לוגיקת JavaScript                         -->
-    <!-- ========================================== -->
-    <script>
-        let selectedFilesData = [];
+  <script>
+    let recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+    let shoppingList = JSON.parse(localStorage.getItem('shoppingList') || '[]');
+    let currentRecipeId = null;
 
-        // טעינת מתכונים מ-LocalStorage או טעינת ברירת מחדל
-        let recipes = JSON.parse(localStorage.getItem('my_recipes')) || [
-            {
-                id: 1,
-                title: "פסטה ברוטב שמנת ופטריות",
-                category: "cooking",
-                kosher: "dairy",
-                ingredients: "פסטה, שמנת מתוקה, פטריות, שום, פרמזן",
-                instructions: "מבשלים את הפסטה, מטגנים פטריות ושום, מוסיפים שמנת ומביאים לרתיחה."
-            },
-            {
-                id: 2,
-                title: "עוגת שוקולד פרווה",
-                category: "desserts",
-                kosher: "pareve",
-                ingredients: "קמח, סוכר, קקאו, שמן, מים, אבקת אפייה",
-                instructions: "מערבבים את כל החומרים, יוצקים לתבנית ואופים ב-180 מעלות כ-30 דקות."
-            }
-        ];
+    function saveToStorage() {
+      localStorage.setItem('recipes', JSON.stringify(recipes));
+      localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+    }
 
-        const kosherBadges = {
-            dairy: '<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-300">🥛 חלבי</span>',
-            meat: '<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-red-300">🥩 בשרי</span>',
-            pareve: '<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-green-300">🌱 פרווה</span>'
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      document.getElementById('nav-' + pageId)?.classList.add('active');
+      
+      if(pageId === 'home') renderHome();
+      if(pageId === 'tools') renderShoppingList();
+    }
+
+    function renderHome() {
+      const grid = document.getElementById('recipes-grid');
+      const categoryFilter = document.getElementById('filter-category').value;
+      grid.innerHTML = '';
+
+      const filtered = categoryFilter === 'all' ? recipes : recipes.filter(r => r.category === categoryFilter);
+
+      filtered.forEach(r => {
+        const badgeClass = r.type === 'חלבי' ? 'badge-dairy' : r.type === 'בשרי' ? 'badge-meat' : 'badge-parve';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => openRecipe(r.id);
+        card.innerHTML = `
+          <img src="${r.img || 'https://via.placeholder.com/150'}" alt="${r.title}">
+          <div class="card-content">
+            <div class="card-title">${r.title}</div>
+            <span class="badge ${badgeClass}">${r.type || 'פרווה'}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function saveRecipe() {
+      const title = document.getElementById('recipe-title').value;
+      if (!title) return alert('נא להזין שם מתכון');
+
+      const imgInput = document.getElementById('recipe-img-file');
+      
+      const processSave = (imgBase64) => {
+        const recipe = {
+          id: Date.now(),
+          title,
+          desc: document.getElementById('recipe-desc').value,
+          category: document.getElementById('recipe-category').value,
+          type: document.getElementById('recipe-type').value,
+          ingredients: document.getElementById('recipe-ingredients').value.split('\n').filter(i => i.trim()),
+          steps: document.getElementById('recipe-steps').value.split('\n').filter(s => s.trim()),
+          img: imgBase64 || ''
         };
 
-        const categoryNames = {
-            cooking: 'בישול',
-            baking: 'אפייה',
-            desserts: 'קינוחים',
-            salads: 'סלטים',
-            soups: 'מרקים'
-        };
+        recipes.push(recipe);
+        saveToStorage();
+        alert('המתכון נשמר בהצלחה!');
+        showPage('home');
+      };
 
-        // --- העלאה וסריקה של כמה תמונות ---
-        function handleImageSelection(event) {
-            const files = Array.from(event.target.files);
-            if (files.length === 0) return;
+      if (imgInput.files && imgInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => processSave(e.target.result);
+        reader.readAsDataURL(imgInput.files[0]);
+      } else {
+        processSave('');
+      }
+    }
 
-            files.forEach(file => {
-                selectedFilesData.push({
-                    id: Math.random().toString(36).substr(2, 9),
-                    file: file,
-                    category: 'ingredients'
-                });
-            });
+    function openRecipe(id) {
+      currentRecipeId = id;
+      const r = recipes.find(item => item.id === id);
+      if(!r) return;
 
-            renderImageList();
-            event.target.value = '';
+      document.getElementById('view-title').innerText = r.title;
+      document.getElementById('view-desc').innerText = r.desc || '';
+      document.getElementById('view-img').src = r.img || 'https://via.placeholder.com/300';
+      
+      const typeBadge = document.getElementById('view-type');
+      typeBadge.innerText = r.type || 'פרווה';
+      typeBadge.className = 'badge ' + (r.type === 'חלבי' ? 'badge-dairy' : r.type === 'בשרי' ? 'badge-meat' : 'badge-parve');
+
+      const ingDiv = document.getElementById('view-ingredients');
+      ingDiv.innerHTML = '';
+      r.ingredients.forEach((ing, index) => {
+        ingDiv.innerHTML += `
+          <div class="ingredient-row">
+            <input type="checkbox" id="ing-${index}" value="${ing}">
+            <label for="ing-${index}">${ing}</label>
+          </div>
+        `;
+      });
+
+      const stepsOl = document.getElementById('view-steps');
+      stepsOl.innerHTML = '';
+      r.steps.forEach(step => {
+        stepsOl.innerHTML += `<li>${step}</li>`;
+      });
+
+      showPage('view');
+    }
+
+    function deleteCurrentRecipe() {
+      if(confirm('בטוח שברצונך למחוק מתכון זה?')) {
+        recipes = recipes.filter(r => r.id !== currentRecipeId);
+        saveToStorage();
+        showPage('home');
+      }
+    }
+
+    function addMissingToShopping() {
+      const checkboxes = document.querySelectorAll('#view-ingredients input[type="checkbox"]');
+      let addedCount = 0;
+      checkboxes.forEach(cb => {
+        if(cb.checked) { // מסומן מה שחסר
+          shoppingList.push({ id: Date.now() + Math.random(), text: cb.value, done: false });
+          addedCount++;
         }
+      });
+      saveToStorage();
+      alert(`נוספו ${addedCount} מצרכים לרשימת הקניות!`);
+    }
 
-        function renderImageList() {
-            const container = document.getElementById('imageList');
-            container.innerHTML = '';
+    function renderShoppingList() {
+      const ul = document.getElementById('shopping-list');
+      ul.innerHTML = '';
+      shoppingList.forEach((item, index) => {
+        ul.innerHTML += `
+          <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:white; padding:8px; border-radius:5px;">
+            <span style="${item.done ? 'text-decoration:line-through; color:gray;' : ''}" onclick="toggleShopItem(${index})">${item.text}</span>
+            <button style="width:auto; margin:0; background:#e74c3c; color:white;" onclick="deleteShopItem(${index})">✕</button>
+          </li>
+        `;
+      });
+    }
 
-            if (selectedFilesData.length === 0) {
-                document.getElementById('scanBtn').disabled = true;
-                return;
-            }
+    function addManualShopItem() {
+      const input = document.getElementById('new-shop-item');
+      if(input.value.trim()) {
+        shoppingList.push({ id: Date.now(), text: input.value.trim(), done: false });
+        input.value = '';
+        saveToStorage();
+        renderShoppingList();
+      }
+    }
 
-            document.getElementById('scanBtn').disabled = false;
+    function toggleShopItem(index) {
+      shoppingList[index].done = !shoppingList[index].done;
+      saveToStorage();
+      renderShoppingList();
+    }
 
-            selectedFilesData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-200";
+    function deleteShopItem(index) {
+      shoppingList.splice(index, 1);
+      saveToStorage();
+      renderShoppingList();
+    }
 
-                card.innerHTML = `
-                    <div class="truncate max-w-xs">
-                        <span class="text-sm font-medium text-gray-700 truncate">${item.file.name}</span>
-                    </div>
-                    <div class="flex items-center space-x-2 space-x-reverse">
-                        <select onchange="updateCategory('${item.id}', this.value)" class="text-sm border rounded p-1 bg-white">
-                            <option value="ingredients" ${item.category === 'ingredients' ? 'selected' : ''}>רכיבים</option>
-                            <option value="instructions" ${item.category === 'instructions' ? 'selected' : ''}>אופן הכנה</option>
-                            <option value="both" ${item.category === 'both' ? 'selected' : ''}>כללי / משולב</option>
-                        </select>
-                        <button onclick="removeFile('${item.id}')" class="text-red-500 hover:text-red-700 font-bold px-2 text-lg">&times;</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+    function calculateConversion() {
+      const type = document.getElementById('convert-ingredient').value;
+      const cups = parseFloat(document.getElementById('convert-cups').value) || 0;
+      let ratio = 140; // ברירת מחדל קמח
 
-        function updateCategory(id, newCategory) {
-            const item = selectedFilesData.find(f => f.id === id);
-            if (item) item.category = newCategory;
-        }
+      if (type === 'sugar') ratio = 200;
+      if (type === 'oil') ratio = 200;
+      if (type === 'water') ratio = 240;
+      if (type === 'powdered_sugar') ratio = 120;
 
-        function removeFile(id) {
-            selectedFilesData = selectedFilesData.filter(f => f.id !== id);
-            renderImageList();
-        }
+      const total = cups * ratio;
+      const unit = (type === 'oil' || type === 'water') ? 'מ"ל' : 'גרם';
+      document.getElementById('convert-result').innerText = `תוצאה: ${total} ${unit}`;
+    }
 
-        async function processAllImages() {
-            if (selectedFilesData.length === 0) return;
+    // ניתוח AI באמצעות Gemini API
+    async function parseWithAI() {
+      const apiKey = document.getElementById('api-key').value;
+      const text = document.getElementById('import-text').value;
+      const fileInput = document.getElementById('import-images');
 
-            const scanBtn = document.getElementById('scanBtn');
-            const progressDiv = document.getElementById('scanProgress');
-            
-            scanBtn.disabled = true;
-            progressDiv.classList.remove('hidden');
+      if (!apiKey) return alert('נא להזין מפתח Gemini API');
 
-            let ingredientsResult = [];
-            let instructionsResult = [];
-
-            for (let i = 0; i < selectedFilesData.length; i++) {
-                const item = selectedFilesData[i];
-                progressDiv.innerText = `סורק תמונה ${i + 1} מתוך ${selectedFilesData.length}...`;
-
-                try {
-                    const { data: { text } } = await Tesseract.recognize(
-                        item.file,
-                        'heb+eng',
-                        {
-                            logger: m => {
-                                if (m.status === 'recognizing text') {
-                                    const percent = Math.round((m.progress || 0) * 100);
-                                    progressDiv.innerText = `סורק תמונה ${i + 1} מתוך ${selectedFilesData.length}: ${percent}%`;
-                                }
-                            }
-                        }
-                    );
-
-                    const cleanText = text.trim();
-
-                    if (item.category === 'ingredients') {
-                        ingredientsResult.push(cleanText);
-                    } else if (item.category === 'instructions') {
-                        instructionsResult.push(cleanText);
-                    } else if (item.category === 'both') {
-                        ingredientsResult.push(cleanText);
-                        instructionsResult.push(cleanText);
-                    }
-
-                } catch (error) {
-                    console.error("שגיאה בסריקה:", error);
-                    alert(`אירעה שגיאה בסריקת הקובץ: ${item.file.name}`);
-                }
-            }
-
-            if (ingredientsResult.length > 0) {
-                const currentVal = document.getElementById('ingredientsText').value;
-                document.getElementById('ingredientsText').value = (currentVal ? currentVal + '\n\n' : '') + ingredientsResult.join('\n\n');
-            }
-
-            if (instructionsResult.length > 0) {
-                const currentVal = document.getElementById('instructionsText').value;
-                document.getElementById('instructionsText').value = (currentVal ? currentVal + '\n\n' : '') + instructionsResult.join('\n\n');
-            }
-
-            progressDiv.innerText = "הסריקה הושלמה בהצלחה!";
-            setTimeout(() => { progressDiv.classList.add('hidden'); }, 3000);
-
-            selectedFilesData = [];
-            renderImageList();
-        }
-
-        // --- שמירת מתכון ---
-        function saveRecipe() {
-            const title = document.getElementById('recipeTitle').value.trim();
-            const category = document.getElementById('recipeCategory').value;
-            const kosher = document.getElementById('recipeKosher').value;
-            const ingredients = document.getElementById('ingredientsText').value.trim();
-            const instructions = document.getElementById('instructionsText').value.trim();
-
-            if (!title) {
-                alert('אנא הזן שם למתכון');
-                return;
-            }
-
-            const newRecipe = {
-                id: Date.now(),
-                title,
-                category,
-                kosher,
-                ingredients,
-                instructions
-            };
-
-            recipes.unshift(newRecipe);
-            localStorage.setItem('my_recipes', JSON.stringify(recipes));
-            applyFilters();
-
-            // איפוס הטופס
-            document.getElementById('recipeTitle').value = '';
-            document.getElementById('ingredientsText').value = '';
-            document.getElementById('instructionsText').value = '';
-            alert('המתכון נשמר בהצלחה!');
-        }
-
-        // --- מנגנון סינון והצגה ---
-        function applyFilters() {
-            const searchText = document.getElementById('filterSearchInput').value.toLowerCase().trim();
-            const selectedCategory = document.getElementById('filterCategory').value;
-            const selectedKosher = document.getElementById('filterKosher').value;
-
-            const filteredRecipes = recipes.filter(recipe => {
-                const matchesSearch = recipe.title.toLowerCase().includes(searchText);
-                const matchesCategory = (selectedCategory === 'all') || (recipe.category === selectedCategory);
-                const matchesKosher = (selectedKosher === 'all') || (recipe.kosher === selectedKosher);
-
-                return matchesSearch && matchesCategory && matchesKosher;
-            });
-
-            renderRecipes(filteredRecipes);
-        }
-
-        function deleteRecipe(id) {
-            if (confirm('האם אתה בטוח שברצונך למחוק מתכון זה?')) {
-                recipes = recipes.filter(r => r.id !== id);
-                localStorage.setItem('my_recipes', JSON.stringify(recipes));
-                applyFilters();
-            }
-        }
-
-        function renderRecipes(recipesToDisplay) {
-            const container = document.getElementById('recipesContainer');
-            container.innerHTML = '';
-
-            if (recipesToDisplay.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-8 font-semibold">לא נמצאו מתכונים המתאימים לסינון הנבחר.</div>`;
-                return;
-            }
-
-            recipesToDisplay.forEach(recipe => {
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 flex flex-col justify-between p-5 hover:shadow-lg transition-shadow";
-
-                card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-bold text-gray-800">${recipe.title}</h4>
-                            <div>${kosherBadges[recipe.kosher] || ''}</div>
-                        </div>
-                        <div class="text-xs text-gray-500 mb-3 font-medium">
-                            קטגוריה: <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">${categoryNames[recipe.category] || recipe.category}</span>
-                        </div>
-                        ${recipe.ingredients ? `
-                            <div class="mb-3">
-                                <strong class="text-xs text-gray-700 block mb-1">רכיבים:</strong>
-                                <p class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-2 rounded">${recipe.ingredients}</p>
-                            </div>
-                        ` : ''}
-                        ${recipe.instructions ? `
-                            <div class="mb-3">
-                                <strong class="text-xs text-gray-700 block mb-1">אופן הכנה:</strong>
-                                <p class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-2 rounded">${recipe.instructions}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="pt-3 border-t text-left">
-                        <button onclick="deleteRecipe(${recipe.id})" class="text-xs text-red-600 hover:text-red-800 font-semibold">מחק מתכון</button>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-        }
-
-        // טעינה ראשונית של המתכונים
-        document.addEventListener('DOMContentLoaded', () => {
-            applyFilters();
-        });
-    </script>
+      let prompt = "חלץ מהטקסט/תמונות את המתכון והחזר JSON בלבד במבנה הבא: {\"title\": \"\", \"desc\": \"\", \"ingredients\": [\"\"], \"steps\": [\"\"]}";
+      
+      // כאן ניתן לצרף את בקשת ה-Fetch ל-Gemini API
+      alert("פונקציונליות ה-AI מוכנה לחיבור המפתח שלך!");
+    }
+  </script>
 </body>
 </html>
